@@ -9,6 +9,7 @@ Agent IA qui analyse l'historique des ventes, prévoit la demande par produit et
 - Produire des prévisions par produit et par site
 - Mesurer l'erreur et s'ajuster (backtesting + détection de drift)
 - Expliquer les variations (SHAP / décomposition + LLM)
+- Exposer le tout via une API et une interface utilisateur
 
 ## Datasets
 
@@ -53,7 +54,7 @@ Format commun (unique_id, ds, y, exogènes)
 Feature engineering (saisonnalité, promo, exogènes, lags)
         │
         ▼
-Modèle (LightGBM / Nixtla)
+Modèle (LightGBM / Nixtla)  ──►  models/ (artefacts sauvegardés)
         │
         ▼
 Évaluation (backtesting en fenêtre glissante)
@@ -63,30 +64,63 @@ Boucle d'ajustement (réentraînement / changement de modèle si drift)
         │
         ▼
 Module d'explication (SHAP / Prophet + LLM)
+        │
+        ▼
+API (api/)  ──►  Interface utilisateur (ui/)
+```
+
+## Structure du projet
+
+```
+.
+├── api/            # API REST : endpoints de prévision, d'évaluation et d'explication
+├── data/           # Données brutes et transformées (non versionnées, voir .gitignore)
+├── src/            # Code métier du pipeline
+│   ├── loaders/        # Chargement M5 / Favorita -> format commun
+│   ├── features/       # Feature engineering
+│   ├── models/         # Entraînement et inférence
+│   ├── evaluation/     # Backtesting, métriques, détection de drift
+│   ├── explain/        # SHAP / décomposition + génération d'explications LLM
+│   └── agent/          # Orchestration de l'agent (outils, boucle d'ajustement)
+├── docs/           # Documentation, schémas d'architecture, rapport
+├── models/         # Modèles entraînés et artefacts (non versionnés)
+├── notebooks/      # Exploration et prototypage
+├── scripts/        # Scripts utilitaires (chargement des données, entraînement, backtest)
+├── tests/          # Tests unitaires et d'intégration
+├── ui/             # Interface utilisateur
+├── requirements.txt
+├── .gitignore
+└── README.md
 ```
 
 ## Modules
 
-### 1. Loaders
+### 1. Loaders (`src/loaders/`)
 Chargement de M5 et Favorita, conversion vers le format commun `unique_id, ds, y` + exogènes.
 
-### 2. Features
+### 2. Features (`src/features/`)
 - **Saisonnalité** : jour de la semaine, semaine, mois, année, jours fériés
 - **Promotions** : `onpromotion` (Favorita), proxy prix (M5)
 - **Facteurs externes** : événements, SNAP, prix du pétrole, transactions
 - **Lags et moyennes glissantes** sur les ventes
 
-### 3. Modèle
-Prévisions par produit et par site avec LightGBM (ou modèles statistiques/ML via Nixtla).
+### 3. Modèle (`src/models/`)
+Prévisions par produit et par site avec LightGBM (ou modèles statistiques/ML via Nixtla). Les modèles entraînés sont sauvegardés dans `models/`.
 
-### 4. Évaluation et ajustement
+### 4. Évaluation et ajustement (`src/evaluation/`)
 - Backtesting en fenêtre glissante
 - Métriques : MAE, RMSE, sMAPE, WRMSSE (M5)
 - Si l'erreur dépasse un seuil (drift) : réentraînement ou changement de modèle
 
-### 5. Explicabilité
+### 5. Explicabilité (`src/explain/`)
 - SHAP sur LightGBM ou décomposition tendance/saisonnalité (Prophet)
 - Un LLM transforme les résultats en explications lisibles, par exemple : *« les ventes montent de 18 % à cause de la promo et du week-end »*
+
+### 6. API (`api/`)
+Expose le pipeline : demande de prévision par produit/site, métriques d'erreur, explications.
+
+### 7. Interface (`ui/`)
+Interface permettant de visualiser les prévisions, l'erreur et les explications.
 
 ## Installation
 
@@ -98,20 +132,18 @@ pip install -r requirements.txt
 
 Dépendances principales : `pandas`, `lightgbm`, `shap`, `datasetsforecast`, `statsforecast`, `prophet`.
 
-## Structure du projet (proposée)
+## Utilisation
 
+Charger les données M5 (première exécution : téléchargement, puis cache dans `data/`) :
+
+```bash
+python scripts/load_m5.py
 ```
-.
-├── data/
-├── src/
-│   ├── loaders/
-│   ├── features/
-│   ├── models/
-│   ├── evaluation/
-│   └── explain/
-├── notebooks/
-├── requirements.txt
-└── README.md
+
+## Tests
+
+```bash
+pytest tests/
 ```
 
 ## Licences et sources
