@@ -1,0 +1,27 @@
+# Données
+pandas
+numpy
+pyarrow
+datasetsforecast
+
+# Modèles
+lightgbm
+scikit-learn
+statsforecast
+prophet
+
+# Explicabilité
+shap
+matplotlib
+
+# API et UI
+fastapi
+uvicorn
+streamlit
+
+# Config et LLM
+python-dotenv
+anthropic
+
+# Tests
+pytest
