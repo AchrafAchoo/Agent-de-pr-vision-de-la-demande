@@ -20,11 +20,19 @@ Agent IA qui analyse l'historique des ventes, prévoit la demande par produit et
 
 > M5 est une *competition* Kaggle : il faut cliquer sur **Join Competition** et accepter les règles pour accéder aux données.
 
-Alternative sans Kaggle pour M5 :
+Le chargement complet M5 peut demander plusieurs Go de RAM. Le script charge
+par défaut un échantillon de 500 séries, en filtrant avant la conversion en
+format long :
 
-```python
-from datasetsforecast.m5 import M5
-Y_df, X_df, S_df = M5.load('data')
+```bash
+python scripts/load_m5.py
+python scripts/load_m5.py --max-series 1000
+```
+
+Pour charger tout le dataset (utiliser une machine avec suffisamment de mémoire) :
+
+```bash
+python scripts/load_m5.py --all
 ```
 
 ### Couverture des besoins
