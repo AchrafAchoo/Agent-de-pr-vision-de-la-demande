@@ -171,3 +171,20 @@ python scripts/run_seasonal_baseline.py
 Le CSV de prévision est écrit dans `data/m5_seasonal_naive_forecast.csv`.
 `--max-series` et `--output` permettent de changer le nombre de séries et le
 chemin de sortie.
+
+## Premier modèle LightGBM
+
+Pour entraîner le premier modèle et prévoir les 28 derniers jours de chaque
+série de l'échantillon M5 :
+
+```powershell
+python scripts/train_lightgbm.py
+```
+
+Le modèle Poisson LightGBM est entraîné sur l'historique antérieur aux 28 jours
+réservés, puis sauvegardé dans `data/m5_lightgbm_model.joblib`. Les prévisions
+sont exportées dans `data/m5_lightgbm_forecast.csv` avec les colonnes
+`unique_id`, `ds` et `y_hat`. Par défaut, le script traite 500 séries
+(14 000 prévisions). `--max-series`, `--model-output` et
+`--forecast-output` permettent de modifier la taille de l'échantillon et les
+chemins de sortie.
